@@ -1,0 +1,38 @@
+  <div class='row'>
+    <app-user-card class="col-3  position-fixed"></app-user-card>
+
+    <div class="col-7 offset-3">
+      <div class="row">
+
+        <form (submit)="handleNewTweet()" class="card col-12 offset-1 border-primary"
+          *ngIf="username === ''; else hasUsername">
+          <textarea required [(ngModel)]="newTweet" name="newTweet" class="form-control m-2"></textarea>
+          <button type="submit" class="btn btn-primary m-2">send</button>
+        </form>
+
+        <ng-template #hasUsername>
+          <div class="card col-12 offset-1 btn-light border-success">
+            <div class="card-body">
+              <footer class="blockquote-footer">@{{user.username }}</footer>
+              <p class="card-text">{{ user.bio }}</p>
+              <button class="btn btn-primary float-right" (click)="handleFollow()">{{followed? 'Unfollow': 'Follow'}}</button>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+
+      <br />
+
+
+      <div *ngIf="tweets">
+        <div class="row" *ngFor="let tweet of tweets.results">
+          <div class="card mb-2 offset-1 col-12 btn-light border-primary">
+            <div class="card-body">
+              <a class="blockquote-footer " href="user/{{tweet.username}}">@{{tweet.username }}</a>
+              <p class="card-text">{{ tweet.content }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
