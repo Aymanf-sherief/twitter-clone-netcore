@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using twitter_clone_netcore.Models;
 using Microsoft.EntityFrameworkCore;
-
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace twitter_clone_netcore
 {

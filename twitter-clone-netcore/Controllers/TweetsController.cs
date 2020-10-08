@@ -29,6 +29,9 @@ namespace twitter_clone_netcore.Controllers
 
         // GET: api/Tweets/5
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
         public async Task<ActionResult<Tweet>> GetTweet(int id)
         {
             var tweet = await _context.Tweets.FindAsync(id);
@@ -45,6 +48,10 @@ namespace twitter_clone_netcore.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
         public async Task<IActionResult> PutTweet(int id, Tweet tweet)
         {
             if (id != tweet.ID)
@@ -77,6 +84,8 @@ namespace twitter_clone_netcore.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to, for
         // more details, see https://go.microsoft.com/fwlink/?linkid=2123754.
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesDefaultResponseType]
         public async Task<ActionResult<Tweet>> PostTweet(Tweet tweet)
         {
             _context.Tweets.Add(tweet);
@@ -87,6 +96,9 @@ namespace twitter_clone_netcore.Controllers
 
         // DELETE: api/Tweets/5
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesDefaultResponseType]
         public async Task<ActionResult<Tweet>> DeleteTweet(int id)
         {
             var tweet = await _context.Tweets.FindAsync(id);
