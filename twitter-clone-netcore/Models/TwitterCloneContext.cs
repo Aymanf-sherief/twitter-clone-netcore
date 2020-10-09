@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using IdentityServer4.EntityFramework.Entities;
+using IdentityServer4.EntityFramework.Interfaces;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,4 +18,13 @@ namespace twitter_clone_netcore.Models
         public DbSet<User> Users { get; set; }
         public DbSet<Tweet> Tweets { get; set; }
     }
+
+    public class UserDBContext : IdentityDbContext
+    {
+
+        public DbSet<User> users { get; set; }
+      
+        public UserDBContext(DbContextOptions<UserDBContext> options) : base(options) { }
+
+          }
 }

@@ -8,6 +8,11 @@ using Microsoft.Extensions.Hosting;
 using twitter_clone_netcore.Models;
 using Microsoft.EntityFrameworkCore;
 using Swashbuckle.AspNetCore.Swagger;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace twitter_clone_netcore
 {
@@ -30,10 +35,29 @@ namespace twitter_clone_netcore
                 configuration.RootPath = "ClientApp/dist";
             });
 
-            services.AddDbContext<TwitterCloneContext>(options =>
-        options.UseSqlServer(Configuration.GetConnectionString("Dev")));
+           
 
+                services.AddDbContext<TwitterCloneContext>(options =>
+            options.UseSqlServer(Configuration.GetConnectionString("Dev")));
+
+
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = Configuration["Jwt:Issuer"],
+            ValidAudience = Configuration["Jwt:Issuer"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:Key"]))
+        };
+    });
             services.AddMvc();
+
             services.AddSwaggerGen();
 
         }
@@ -70,7 +94,13 @@ namespace twitter_clone_netcore
                 c.RoutePrefix = string.Empty;
             });
 
+
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+
 
             app.UseEndpoints(endpoints =>
             {

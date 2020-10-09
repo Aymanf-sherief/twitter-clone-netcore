@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using twitter_clone_netcore.Models;
 
 [assembly:ApiConventionType(typeof(DefaultApiConventions))]
@@ -12,13 +17,36 @@ namespace twitter_clone_netcore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase
+    public class UsersController : Controller
     {
         private readonly TwitterCloneContext _context;
+        private IConfiguration _config;
 
-        public UsersController(TwitterCloneContext context)
+
+        public UsersController(TwitterCloneContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
+        }
+
+
+
+        //POST Authentication
+        [AllowAnonymous]
+        [Route("login")]
+        [HttpPost]
+        public IActionResult Login([FromBody] User login)
+        {
+            IActionResult response = Unauthorized();
+            var user = AuthenticateUser(login);
+
+            if (user != null)
+            {
+                var tokenString = GenerateJSONWebToken(user);
+                response = Ok(new { token = tokenString });
+            }
+
+            return response;
         }
 
         // GET: api/Users
@@ -53,6 +81,7 @@ namespace twitter_clone_netcore.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
+        [Authorize]
         public async Task<IActionResult> PutUser(int id, User user)
         {
             if (id != user.ID)
@@ -87,6 +116,7 @@ namespace twitter_clone_netcore.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesDefaultResponseType]
+
         public async Task<ActionResult<User>> PostUser(User user)
         {
             _context.Users.Add(user);
@@ -100,6 +130,8 @@ namespace twitter_clone_netcore.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
+        [Authorize]
+
         public async Task<ActionResult<User>> DeleteUser(int id)
         {
             var user = await _context.Users.FindAsync(id);
@@ -117,6 +149,34 @@ namespace twitter_clone_netcore.Controllers
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.ID == id);
+        }
+
+        private string GenerateJSONWebToken(User userInfo)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(_config["Jwt:Issuer"],
+              _config["Jwt:Issuer"],
+              null,
+              expires: DateTime.Now.AddMinutes(120),
+              signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private User AuthenticateUser(User login)
+        {
+            User user = null;
+            IQueryable<User> result = _context.Users.Where(user => user.Username == login.Username
+                                    && user.Password == login.Password);
+            if (result.Count() == 1)
+            {
+                return result.FirstOrDefault();
+            }
+
+            return user;
+            
         }
     }
 }
