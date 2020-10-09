@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -52,6 +54,7 @@ namespace twitter_clone_netcore.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesDefaultResponseType]
+        [Authorize]
         public async Task<IActionResult> PutTweet(int id, Tweet tweet)
         {
             if (id != tweet.ID)
@@ -86,8 +89,11 @@ namespace twitter_clone_netcore.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesDefaultResponseType]
+        [Authorize]
         public async Task<ActionResult<Tweet>> PostTweet(Tweet tweet)
         {
+            User currentUser = _context.Users.Find(int.Parse(User.Identity.Name));
+            tweet.User = currentUser;
             _context.Tweets.Add(tweet);
             await _context.SaveChangesAsync();
 

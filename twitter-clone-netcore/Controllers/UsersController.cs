@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using twitter_clone_netcore.Models;
+using System.Security.Claims;
 
 [assembly:ApiConventionType(typeof(DefaultApiConventions))]
 namespace twitter_clone_netcore.Controllers
@@ -156,10 +157,14 @@ namespace twitter_clone_netcore.Controllers
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+            List<Claim> claims = new List<Claim> {
+                new Claim("ID", userInfo.ID.ToString())
+    };
+            
             var token = new JwtSecurityToken(_config["Jwt:Issuer"],
               _config["Jwt:Issuer"],
-              null,
-              expires: DateTime.Now.AddMinutes(120),
+                claims,
+              expires: DateTime.Now.AddDays(120),
               signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
